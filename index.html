@@ -10,7 +10,7 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-055';
+  var VER = 'v20260715-056';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
   // Fetch version.json with no-store to always get latest
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
@@ -2822,7 +2822,7 @@ function _syncRefreshUI() {
       else if (id === 'tab-manager-todo') buildManagerTodoTab();
       else if (id === 'tab-manager-pengumuman') buildPengumumanTab();
       else if (id === 'tab-cash-report') buildCashReportTab();
-      else if (id === 'tab-crm') buildCrmTab();
+      else if (id === 'tab-crm') { const _cm = document.getElementById('crm-modal'); if (!_cm || _cm.style.display === 'none') buildCrmTab(); }
       else if (id === 'tab-kasir-riwayat') buildKasirRiwayatTab();
       else if (id === 'tab-kasir-laporan') buildKasirLaporanTab();
       else if (id === 'tab-kasir-laporan-produk') buildKasirLaporanProdukTab();

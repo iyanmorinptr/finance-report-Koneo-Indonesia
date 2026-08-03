@@ -18,13 +18,17 @@
       regs.forEach(function(r) { r.unregister(); });
     });
   }
-  // Fetch version.json with no-store to always get latest
+  // Only redirect once — check if we already redirected for this version
+  var _alreadyReloaded = sessionStorage.getItem('_reloaded_ver');
+  if (_alreadyReloaded === VER) return; // already on correct version
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ver && d.ver !== VER) {
-        // Server has newer version — hard reload bypassing cache
-        window.location.href = window.location.pathname + '?v=' + d.ver + '&t=' + Date.now();
+        sessionStorage.setItem('_reloaded_ver', d.ver);
+        window.location.href = window.location.pathname + '?v=' + d.ver;
+      } else {
+        sessionStorage.setItem('_reloaded_ver', VER);
       }
     }).catch(function(){});
 })();

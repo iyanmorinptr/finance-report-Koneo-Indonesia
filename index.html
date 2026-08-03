@@ -10,7 +10,7 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-053';
+  var VER = 'v20260715-054';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
   // Fetch version.json with no-store to always get latest
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
@@ -1339,7 +1339,6 @@
       <button class="sidebar-item" id="sitem-laporan-pajak" onclick="sidebarGo('laporan-pajak')"><i class="ti ti-receipt-tax"></i> Laporan Pajak</button>
       <button class="sidebar-item" id="sitem-invoice" onclick="sidebarGo('invoice')"><i class="ti ti-file-invoice"></i> Invoice</button>
       <button class="sidebar-item" id="sitem-cash-report" onclick="sidebarGo('cash-report')"><i class="ti ti-cash-banknote"></i> Cash Report</button>
-      <button class="sidebar-item" id="sitem-crm" onclick="sidebarGo('crm')"><i class="ti ti-users"></i> CRM</button>
     </div>
 
     <!-- Stock -->
@@ -1365,6 +1364,14 @@
       <button class="sidebar-item" id="sitem-manager-report" onclick="sidebarGo('manager-report')"><i class="ti ti-file-text"></i> Report</button>
       <button class="sidebar-item" id="sitem-manager-todo" onclick="sidebarGo('manager-todo')"><i class="ti ti-list-check"></i> To Do List</button>
       <button class="sidebar-item" id="sitem-manager-pengumuman" onclick="sidebarGo('manager-pengumuman')"><i class="ti ti-speakerphone"></i> Pengumuman Staff</button>
+    </div>
+    <!-- CRM -->
+    <button onclick="toggleSidebarGroup('crm')" id="sg-crm" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 14px;border-radius:12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:#1a1a18;transition:background 0.15s;" onmouseover="this.style.background='rgba(9,58,114,0.05)'" onmouseout="this.style.background='none'">
+      <span style="display:flex;align-items:center;gap:10px;"><i class="ti ti-users" style="font-size:17px;color:#093a72;"></i> CRM</span>
+      <i class="ti ti-chevron-right" id="sg-crm-chevron" style="font-size:13px;color:var(--text3);transition:transform 0.2s;"></i>
+    </button>
+    <div id="sg-crm-items" style="display:none;padding-left:10px;padding-bottom:4px;">
+      <button class="sidebar-item" id="sitem-crm" onclick="sidebarGo('crm')"><i class="ti ti-users"></i> Pelanggan</button>
     </div>
     <button onclick="toggleSidebarGroup('stok')" id="sg-stok" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 14px;border-radius:12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:#1a1a18;transition:background 0.15s;" onmouseover="this.style.background='rgba(9,58,114,0.05)'" onmouseout="this.style.background='none'">
       <span style="display:flex;align-items:center;gap:10px;"><i class="ti ti-packages" style="font-size:17px;color:#093a72;"></i> Stock</span>
@@ -3216,7 +3223,7 @@ function doLogout() {
   location.reload();
 }
 
-const FINANCE_TABS = ['pemasukan', 'pengeluaran', 'riwayat', 'modal-awal', 'laporan-pajak', 'invoice', 'cash-report', 'crm', 'kasir', 'kasir-produk', 'kasir-kelola', 'kasir-laporan', 'kasir-laporan-produk', 'kasir-riwayat', 'kasir-manual', 'member'];
+const FINANCE_TABS = ['pemasukan', 'pengeluaran', 'riwayat', 'modal-awal', 'laporan-pajak', 'invoice', 'cash-report', 'kasir', 'kasir-produk', 'kasir-kelola', 'kasir-laporan', 'kasir-laporan-produk', 'kasir-riwayat', 'kasir-manual', 'member'];
 const OWNER_ONLY_TABS = ['pengaturan', 'cogs', 'laporan'];
 // Tab yang boleh diakses karyawan (selain beranda)
 const KARYAWAN_ALLOWED = ['beranda', 'stok', 'jadwal', 'absensi'];
@@ -3238,7 +3245,8 @@ function applyRole(role) {
   _show('sg-finance', canFinance);
   _show('sg-finance-items', canFinance);
   // Sembunyikan tiap item finance secara individual
-  ['sitem-pemasukan','sitem-pengeluaran','sitem-riwayat','sitem-modal-awal','sitem-laporan-pajak','sitem-invoice','sitem-cash-report','sitem-crm'].forEach(id => _show(id, canFinance));
+  ['sitem-pemasukan','sitem-pengeluaran','sitem-riwayat','sitem-modal-awal','sitem-laporan-pajak','sitem-invoice','sitem-cash-report'].forEach(id => _show(id, canFinance));
+  _show('sg-crm', canFinance); _show('sg-crm-items', canFinance); _show('sitem-crm', canFinance);
 
   // Laporan dalam finance: owner only
   _show('sitem-laporan', canAdmin);

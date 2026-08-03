@@ -10,7 +10,7 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-052';
+  var VER = 'v20260715-053';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
   // Fetch version.json with no-store to always get latest
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
@@ -1339,6 +1339,7 @@
       <button class="sidebar-item" id="sitem-laporan-pajak" onclick="sidebarGo('laporan-pajak')"><i class="ti ti-receipt-tax"></i> Laporan Pajak</button>
       <button class="sidebar-item" id="sitem-invoice" onclick="sidebarGo('invoice')"><i class="ti ti-file-invoice"></i> Invoice</button>
       <button class="sidebar-item" id="sitem-cash-report" onclick="sidebarGo('cash-report')"><i class="ti ti-cash-banknote"></i> Cash Report</button>
+      <button class="sidebar-item" id="sitem-crm" onclick="sidebarGo('crm')"><i class="ti ti-users"></i> CRM</button>
     </div>
 
     <!-- Stock -->
@@ -2214,6 +2215,11 @@
   <div id="cash-report-content"></div>
 </div>
 
+<!-- ── TAB CRM ──────────────────────────────────────────────── -->
+<div id="tab-crm" class="section">
+  <div id="crm-content"></div>
+</div>
+
     <div id="tab-stok" class="section">
 
     <!-- Sub-tab nav -->
@@ -2808,6 +2814,7 @@ function _syncRefreshUI() {
       else if (id === 'tab-manager-todo') buildManagerTodoTab();
       else if (id === 'tab-manager-pengumuman') buildPengumumanTab();
       else if (id === 'tab-cash-report') buildCashReportTab();
+      else if (id === 'tab-crm') buildCrmTab();
       else if (id === 'tab-kasir-riwayat') buildKasirRiwayatTab();
       else if (id === 'tab-kasir-laporan') buildKasirLaporanTab();
       else if (id === 'tab-kasir-laporan-produk') buildKasirLaporanProdukTab();
@@ -3209,7 +3216,7 @@ function doLogout() {
   location.reload();
 }
 
-const FINANCE_TABS = ['pemasukan', 'pengeluaran', 'riwayat', 'modal-awal', 'laporan-pajak', 'invoice', 'cash-report', 'kasir', 'kasir-produk', 'kasir-kelola', 'kasir-laporan', 'kasir-laporan-produk', 'kasir-riwayat', 'kasir-manual', 'member'];
+const FINANCE_TABS = ['pemasukan', 'pengeluaran', 'riwayat', 'modal-awal', 'laporan-pajak', 'invoice', 'cash-report', 'crm', 'kasir', 'kasir-produk', 'kasir-kelola', 'kasir-laporan', 'kasir-laporan-produk', 'kasir-riwayat', 'kasir-manual', 'member'];
 const OWNER_ONLY_TABS = ['pengaturan', 'cogs', 'laporan'];
 // Tab yang boleh diakses karyawan (selain beranda)
 const KARYAWAN_ALLOWED = ['beranda', 'stok', 'jadwal', 'absensi'];
@@ -3231,7 +3238,7 @@ function applyRole(role) {
   _show('sg-finance', canFinance);
   _show('sg-finance-items', canFinance);
   // Sembunyikan tiap item finance secara individual
-  ['sitem-pemasukan','sitem-pengeluaran','sitem-riwayat','sitem-modal-awal','sitem-laporan-pajak','sitem-invoice','sitem-cash-report'].forEach(id => _show(id, canFinance));
+  ['sitem-pemasukan','sitem-pengeluaran','sitem-riwayat','sitem-modal-awal','sitem-laporan-pajak','sitem-invoice','sitem-cash-report','sitem-crm'].forEach(id => _show(id, canFinance));
 
   // Laporan dalam finance: owner only
   _show('sitem-laporan', canAdmin);
@@ -3544,7 +3551,7 @@ function renderSubmitBar() {
   const bar = document.getElementById('submit-bar');
   // Hide submit bar on beranda and non-finance tabs
   const activeTab = document.querySelector('.section.active');
-  const hideOnTabs = ['tab-beranda','tab-stok','tab-pengaturan','tab-jadwal','tab-absensi','tab-sdm-report','tab-cogs','tab-laporan-pajak','tab-invoice','tab-cash-report','tab-member','tab-manager-report','tab-manager-todo','tab-manager-pengumuman','tab-kasir','tab-kasir-produk','tab-kasir-kelola','tab-kasir-laporan','tab-kasir-laporan-produk','tab-kasir-riwayat','tab-kasir-manual'];
+  const hideOnTabs = ['tab-beranda','tab-stok','tab-pengaturan','tab-jadwal','tab-absensi','tab-sdm-report','tab-cogs','tab-laporan-pajak','tab-invoice','tab-cash-report','tab-crm','tab-member','tab-manager-report','tab-manager-todo','tab-manager-pengumuman','tab-kasir','tab-kasir-produk','tab-kasir-kelola','tab-kasir-laporan','tab-kasir-laporan-produk','tab-kasir-riwayat','tab-kasir-manual'];
   if (!activeTab || hideOnTabs.includes(activeTab.id)) { bar.style.display = 'none'; return; }
   bar.style.display = '';
   const submitted = tgl ? DB.getItem('koneo_day_' + tgl) : null;
@@ -3679,7 +3686,8 @@ function switchTab(tab) {
   if (tab === 'manager-todo') buildManagerTodoTab();
   if (tab === 'manager-pengumuman') buildPengumumanTab();
   if (tab === 'cash-report') buildCashReportTab();
-  var _noBar = ['stok','pengaturan','jadwal','absensi','cogs','beranda','laporan-pajak','invoice','member','kasir','kasir-produk','kasir-kelola','kasir-laporan','kasir-laporan-produk','kasir-riwayat','kasir-manual','cash-report','manager-report','manager-todo','manager-pengumuman'];
+  if (tab === 'crm') buildCrmTab();
+  var _noBar = ['stok','pengaturan','jadwal','absensi','cogs','beranda','laporan-pajak','invoice','member','kasir','kasir-produk','kasir-kelola','kasir-laporan','kasir-laporan-produk','kasir-riwayat','kasir-manual','cash-report','crm','manager-report','manager-todo','manager-pengumuman'];
   if (bar) bar.style.display = _noBar.includes(tab) ? 'none' : '';
   // sync sidebar highlight for finance tabs
   if (tab !== 'stok') updateSidebarActive('sitem-' + tab);
@@ -8961,6 +8969,192 @@ function formatTanggal(tgl) {
   if (!tgl) return '—';
   const d = new Date(tgl + 'T12:00:00');
   return d.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+// ── CRM ──────────────────────────────────────────────────────────────────────
+
+function getCrmData() {
+  try {
+    const parsed = JSON.parse(DB.getItem('koneo_crm') || 'null');
+    if (!parsed || !Array.isArray(parsed)) return [];
+    return parsed;
+  } catch(e) { return []; }
+}
+
+function saveCrmData(arr) {
+  DB.setItem('koneo_crm', JSON.stringify(arr));
+}
+
+var _crmSearch = '';
+var _crmEditId = null;
+
+function buildCrmTab() {
+  const session = getSession();
+  const isOwner = session && session.role === 'owner';
+  const pelanggan = getCrmData();
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Filter by search
+  const filtered = _crmSearch
+    ? pelanggan.filter(p => (p.nama||'').toLowerCase().includes(_crmSearch.toLowerCase()) || (p.hp||'').includes(_crmSearch))
+    : pelanggan;
+
+  // Count follow-ups due today or overdue
+  const dueFU = pelanggan.filter(p => p.followUp && p.followUp <= today).length;
+
+  const el = document.getElementById('crm-content');
+  if (!el) return;
+
+  el.innerHTML =
+    '<div class="card">' +
+    // Header
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">' +
+      '<div>' +
+        '<div style="font-size:16px;font-weight:800;color:#093a72;"><i class="ti ti-users"></i> CRM Pelanggan</div>' +
+        '<div style="font-size:12px;color:var(--text3);margin-top:2px;">' + pelanggan.length + ' pelanggan terdaftar' + (dueFU > 0 ? ' &nbsp;·&nbsp; <span style="color:#dc2626;font-weight:700;">⚑ ' + dueFU + ' follow-up jatuh tempo</span>' : '') + '</div>' +
+      '</div>' +
+      '<button onclick="openCrmForm(null)" style="padding:9px 16px;background:#093a72;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="ti ti-plus"></i> Tambah Pelanggan</button>' +
+    '</div>' +
+
+    // Search
+    '<input type="text" placeholder="Cari nama atau no HP..." value="' + (_crmSearch||'') + '" oninput="_crmSearch=this.value;buildCrmTab()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:var(--bg);margin-bottom:14px;">' +
+
+    // List
+    (filtered.length === 0
+      ? '<div style="text-align:center;padding:32px;color:var(--text3);font-size:14px;">' + (_crmSearch ? 'Tidak ditemukan.' : 'Belum ada pelanggan. Klik "+ Tambah Pelanggan".') + '</div>'
+      : filtered.map(function(p) {
+          const isOverdue = p.followUp && p.followUp < today;
+          const isDueToday = p.followUp && p.followUp === today;
+          const fuBadge = isOverdue
+            ? '<span style="font-size:10px;font-weight:700;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:20px;margin-left:6px;">⚑ Overdue</span>'
+            : isDueToday
+            ? '<span style="font-size:10px;font-weight:700;background:#fef3c7;color:#b45309;padding:2px 7px;border-radius:20px;margin-left:6px;">⚑ Hari ini</span>'
+            : '';
+          return '<div style="padding:12px;border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px;background:var(--card);">' +
+            '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">' +
+              '<div style="flex:1;min-width:0;">' +
+                '<div style="font-size:14px;font-weight:800;color:#093a72;">' + escHtml(p.nama||'-') + fuBadge + '</div>' +
+                (p.hp ? '<div style="font-size:12px;color:var(--text3);margin-top:2px;"><i class="ti ti-phone"></i> ' + escHtml(p.hp) + '</div>' : '') +
+                (p.email ? '<div style="font-size:12px;color:var(--text3);"><i class="ti ti-mail"></i> ' + escHtml(p.email) + '</div>' : '') +
+                '<div style="display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;">' +
+                  '<span style="font-size:12px;font-weight:700;background:rgba(9,58,114,0.08);color:#093a72;padding:2px 10px;border-radius:20px;">⭐ ' + (p.poin||0) + ' poin</span>' +
+                  (p.followUp ? '<span style="font-size:12px;color:var(--text3);"><i class="ti ti-calendar"></i> Follow-up: ' + new Date(p.followUp + 'T00:00:00').toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) + '</span>' : '') +
+                '</div>' +
+                (p.catatan ? '<div style="font-size:12px;color:var(--text3);margin-top:6px;font-style:italic;">📝 ' + escHtml(p.catatan) + '</div>' : '') +
+              '</div>' +
+              '<div style="display:flex;gap:6px;flex-shrink:0;">' +
+                '<button onclick="openCrmForm(\'' + p.id + '\')" style="padding:6px 10px;background:rgba(9,58,114,0.07);border:none;border-radius:8px;font-size:12px;cursor:pointer;color:#093a72;font-weight:700;">Edit</button>' +
+                '<button onclick="deleteCrmPelanggan(\'' + p.id + '\')" style="padding:6px 10px;background:rgba(226,75,74,0.08);border:none;border-radius:8px;font-size:12px;cursor:pointer;color:#E24B4A;font-weight:700;">Hapus</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('')
+    ) +
+    '</div>' +
+
+    // Modal form (inline hidden)
+    '<div id="crm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;padding:16px;">' +
+      '<div style="background:var(--card);border-radius:16px;width:100%;max-width:420px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.18);">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">' +
+          '<div style="font-size:15px;font-weight:800;color:#093a72;" id="crm-modal-title">Tambah Pelanggan</div>' +
+          '<button onclick="closeCrmForm()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">&#x2715;</button>' +
+        '</div>' +
+        _crmField('crm-nama', 'Nama Pelanggan', 'text', 'Nama lengkap...', true) +
+        _crmField('crm-hp', 'No HP / WhatsApp', 'tel', '08xx...', false) +
+        _crmField('crm-email', 'Email', 'email', 'email@...', false) +
+        _crmField('crm-poin', 'Poin Loyalty', 'number', '0', false) +
+        _crmField('crm-follow-up', 'Tanggal Follow-up', 'date', '', false) +
+        '<div style="margin-bottom:14px;">' +
+          '<label style="font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:4px;">Catatan / Feedback</label>' +
+          '<textarea id="crm-catatan" placeholder="Catatan tentang pelanggan ini..." rows="3" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:var(--bg);resize:vertical;"></textarea>' +
+        '</div>' +
+        '<input type="hidden" id="crm-edit-id">' +
+        '<div style="display:flex;gap:10px;">' +
+          '<button onclick="saveCrmForm()" style="flex:1;padding:12px;background:#093a72;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Simpan</button>' +
+          '<button onclick="closeCrmForm()" style="padding:12px 16px;background:none;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text3);">Batal</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function _crmField(id, label, type, placeholder, required) {
+  return '<div style="margin-bottom:14px;">' +
+    '<label style="font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:4px;">' + label + (required ? ' <span style="color:#dc2626;">*</span>' : '') + '</label>' +
+    '<input type="' + type + '" id="' + id + '" placeholder="' + placeholder + '" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:var(--bg);">' +
+    '</div>';
+}
+
+function openCrmForm(id) {
+  const modal = document.getElementById('crm-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  _crmEditId = id;
+  document.getElementById('crm-edit-id').value = id || '';
+  document.getElementById('crm-modal-title').textContent = id ? 'Edit Pelanggan' : 'Tambah Pelanggan';
+  if (id) {
+    const p = getCrmData().find(x => x.id === id);
+    if (p) {
+      document.getElementById('crm-nama').value = p.nama || '';
+      document.getElementById('crm-hp').value = p.hp || '';
+      document.getElementById('crm-email').value = p.email || '';
+      document.getElementById('crm-poin').value = p.poin || 0;
+      document.getElementById('crm-follow-up').value = p.followUp || '';
+      document.getElementById('crm-catatan').value = p.catatan || '';
+    }
+  } else {
+    document.getElementById('crm-nama').value = '';
+    document.getElementById('crm-hp').value = '';
+    document.getElementById('crm-email').value = '';
+    document.getElementById('crm-poin').value = '';
+    document.getElementById('crm-follow-up').value = '';
+    document.getElementById('crm-catatan').value = '';
+  }
+}
+
+function closeCrmForm() {
+  const modal = document.getElementById('crm-modal');
+  if (modal) modal.style.display = 'none';
+  _crmEditId = null;
+}
+
+function saveCrmForm() {
+  const nama = document.getElementById('crm-nama').value.trim();
+  if (!nama) { showToast('Nama pelanggan wajib diisi!'); return; }
+  const entry = {
+    id: _crmEditId || ('CRM-' + Date.now()),
+    nama: nama,
+    hp: document.getElementById('crm-hp').value.trim(),
+    email: document.getElementById('crm-email').value.trim(),
+    poin: parseInt(document.getElementById('crm-poin').value) || 0,
+    followUp: document.getElementById('crm-follow-up').value || '',
+    catatan: document.getElementById('crm-catatan').value.trim(),
+    updatedAt: new Date().toISOString(),
+  };
+  let data = getCrmData();
+  if (_crmEditId) {
+    const idx = data.findIndex(x => x.id === _crmEditId);
+    if (idx !== -1) {
+      entry.createdAt = data[idx].createdAt;
+      data[idx] = entry;
+    } else {
+      entry.createdAt = entry.updatedAt;
+      data.push(entry);
+    }
+  } else {
+    entry.createdAt = entry.updatedAt;
+    data.push(entry);
+  }
+  saveCrmData(data);
+  closeCrmForm();
+  buildCrmTab();
+  showToast('✅ Data pelanggan disimpan!');
+}
+
+function deleteCrmPelanggan(id) {
+  if (!confirm('Hapus pelanggan ini?')) return;
+  saveCrmData(getCrmData().filter(p => p.id !== id));
+  buildCrmTab();
+  showToast('Pelanggan dihapus.');
 }
 
 // ── CASH REPORT ────────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-051';
+  var VER = 'v20260715-052';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
   // Fetch version.json with no-store to always get latest
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
@@ -2776,6 +2776,8 @@ async function initFirestore() {
         if (ch.type === 'removed') { delete _cache[key]; changed = true; }
         else {
           const v = ch.doc.data().v;
+          // Skip if cash report was recently written locally (dirty guard)
+          if (key === 'koneo_cash_report' && typeof _crDirtyUntil !== 'undefined' && Date.now() < _crDirtyUntil) return;
           if (_cache[key] !== v) { _cache[key] = v; changed = true; }
         }
       });
@@ -8972,9 +8974,23 @@ function getCashReport() {
   } catch(e) { return null; }
 }
 
+var _crDirtyUntil = 0;
+var _crSaveTimer = null;
 function saveCashReport(obj) {
   if (obj && obj.rows) obj.rows.sort((a, b) => (a.hari || '') < (b.hari || '') ? -1 : (a.hari || '') > (b.hari || '') ? 1 : 0);
-  DB.setItem('koneo_cash_report', JSON.stringify(obj));
+  const json = JSON.stringify(obj);
+  // Update cache & localStorage immediately
+  _cache['koneo_cash_report'] = json;
+  try { localStorage.setItem('koneo_cash_report', json); } catch(e) {}
+  // Guard: protect from Firestore listener overwrite for 8 seconds after local edit
+  _crDirtyUntil = Date.now() + 8000;
+  // Debounce Firestore write: wait 1.5s after last edit before syncing
+  clearTimeout(_crSaveTimer);
+  _crSaveTimer = setTimeout(function() {
+    _fsSet('koneo_cash_report', json);
+    // Extend dirty guard until Firestore round-trip settles (~3s)
+    _crDirtyUntil = Date.now() + 3000;
+  }, 1500);
 }
 
 var _crRowId = 0;

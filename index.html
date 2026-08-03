@@ -8,30 +8,13 @@
 <meta http-equiv="Expires" content="0">
 <meta name="app-version" content="v20260712-040">
 <script>
-// Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
-(function(){
-  var VER = 'v20260715-058';
-  var base = window.location.pathname.replace(/\/[^/]*$/, '/');
-  // Unregister any service workers first
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      regs.forEach(function(r) { r.unregister(); });
-    });
-  }
-  // Only redirect once — check if we already redirected for this version
-  var _alreadyReloaded = sessionStorage.getItem('_reloaded_ver');
-  if (_alreadyReloaded === VER) return; // already on correct version
-  fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if (d.ver && d.ver !== VER) {
-        sessionStorage.setItem('_reloaded_ver', d.ver);
-        window.location.href = window.location.pathname + '?v=' + d.ver;
-      } else {
-        sessionStorage.setItem('_reloaded_ver', VER);
-      }
-    }).catch(function(){});
-})();
+// Version info only — no redirects
+var VER = 'v20260715-059';
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(r) { r.unregister(); });
+  });
+}
 </script>
 <title>Koneo Indonesia Dashboard</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">

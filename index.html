@@ -10,7 +10,7 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-056';
+  var VER = 'v20260715-057';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
   // Fetch version.json with no-store to always get latest
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
@@ -5795,7 +5795,13 @@ function downloadPajakPNG() {
 }
 
 function sidebarGo(tab) {
-  if (tab !== 'pengaturan') openSidebarGroup('finance');
+  const _crmTabs = ['crm'];
+  const _kasirTabs = ['kasir','kasir-kelola','kasir-laporan','kasir-laporan-produk','kasir-riwayat','kasir-manual','member'];
+  const _managerTabs = ['manager-report','manager-todo','manager-pengumuman'];
+  if (_crmTabs.includes(tab)) openSidebarGroup('crm');
+  else if (_kasirTabs.includes(tab)) openSidebarGroup('kasir');
+  else if (_managerTabs.includes(tab)) openSidebarGroup('manager');
+  else if (tab !== 'pengaturan') openSidebarGroup('finance');
   switchTab(tab);
   updateSidebarActive('sitem-' + tab);
   if (window.innerWidth < 768) closeSidebar();

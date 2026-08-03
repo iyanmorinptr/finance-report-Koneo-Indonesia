@@ -10,7 +10,7 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-054';
+  var VER = 'v20260715-055';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
   // Fetch version.json with no-store to always get latest
   fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
@@ -2791,6 +2791,7 @@ async function initFirestore() {
           const v = ch.doc.data().v;
           // Skip if cash report was recently written locally (dirty guard)
           if (key === 'koneo_cash_report' && typeof _crDirtyUntil !== 'undefined' && Date.now() < _crDirtyUntil) return;
+          if (key === 'koneo_crm' && typeof _crmDirtyUntil !== 'undefined' && Date.now() < _crmDirtyUntil) return;
           if (_cache[key] !== v) { _cache[key] = v; changed = true; }
         }
       });
@@ -8989,8 +8990,14 @@ function getCrmData() {
   } catch(e) { return []; }
 }
 
+var _crmDirtyUntil = 0;
 function saveCrmData(arr) {
-  DB.setItem('koneo_crm', JSON.stringify(arr));
+  const json = JSON.stringify(arr);
+  _cache['koneo_crm'] = json;
+  try { localStorage.setItem('koneo_crm', json); } catch(e) {}
+  _crmDirtyUntil = Date.now() + 8000;
+  _fsSet('koneo_crm', json);
+  setTimeout(function() { _crmDirtyUntil = Date.now() + 3000; }, 1500);
 }
 
 var _crmSearch = '';

@@ -10,32 +10,23 @@
 <script>
 // Force cache clear — fetch version.json fresh every load to detect CDN-cached old HTML
 (function(){
-  var VER = 'v20260715-057';
+  var VER = 'v20260715-058';
   var base = window.location.pathname.replace(/\/[^/]*$/, '/');
-  // Fetch version.json with no-store to always get latest
-  fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if (d.ver && d.ver !== VER) {
-        // Server has newer version — force reload with cache-busting URL
-        if (window.location.search.indexOf('_rv=') === -1) {
-          window.location.replace(window.location.pathname + '?_rv=' + d.ver);
-        }
-      }
-    }).catch(function(){});
-  // Fallback: localStorage-based check
-  if (localStorage.getItem('koneo_app_ver') !== VER) {
-    localStorage.setItem('koneo_app_ver', VER);
-    if (window.location.search.indexOf('cleared') === -1) {
-      window.location.replace(window.location.pathname + '?cleared=1&v=' + VER);
-    }
-  }
-  // Unregister any service workers
+  // Unregister any service workers first
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(regs) {
       regs.forEach(function(r) { r.unregister(); });
     });
   }
+  // Fetch version.json with no-store to always get latest
+  fetch(base + 'version.json?t=' + Date.now(), {cache: 'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.ver && d.ver !== VER) {
+        // Server has newer version — hard reload bypassing cache
+        window.location.href = window.location.pathname + '?v=' + d.ver + '&t=' + Date.now();
+      }
+    }).catch(function(){});
 })();
 </script>
 <title>Koneo Indonesia Dashboard</title>
